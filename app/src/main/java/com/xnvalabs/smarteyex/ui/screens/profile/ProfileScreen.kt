@@ -52,6 +52,7 @@ import com.xnvalabs.smarteyex.ui.theme.ProfileSubText
 import com.xnvalabs.smarteyex.ui.theme.ProfileTitleText
 import com.xnvalabs.smarteyex.ui.theme.profileBackgroundBrush
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 private data class ProfileField(

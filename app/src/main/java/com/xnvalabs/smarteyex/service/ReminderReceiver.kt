@@ -2,12 +2,15 @@ package com.xnvalabs.smarteyex.service
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.xnvalabs.smarteyex.MainActivity
+import com.xnvalabs.smarteyex.R
 import com.xnvalabs.smarteyex.data.reminder.ReminderRepository
 
 /**
@@ -17,6 +20,11 @@ import com.xnvalabs.smarteyex.data.reminder.ReminderRepository
  * daily-repeating by default, matching the feature spec's "Ingetin gue
  * jam 7 buat belajar" style examples (a recurring habit reminder, not a
  * one-off).
+ *
+ * The receiver can fire while the app process isn't running, so it
+ * initializes [ReminderRepository] itself before touching it — without
+ * that the saved reminders would be empty and the next day's alarm would
+ * never be scheduled.
  *
  * Notification posting is wrapped in runCatching: on Android 13+,
  * POST_NOTIFICATIONS might not be granted (ReminderScreen requests it,
@@ -34,10 +42,19 @@ class ReminderReceiver : BroadcastReceiver() {
         val title = intent.getStringExtra(EXTRA_TITLE) ?: "Reminder"
         val id = intent.getIntExtra(EXTRA_ID, 0)
 
+        ReminderRepository.init(context)
         ensureChannel(context)
+        val openApp = PendingIntent.getActivity(
+            context,
+            0,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("SmartEyeX")
             .setContentText(title)
+            .setContentIntent(openApp)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()

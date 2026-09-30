@@ -71,6 +71,11 @@ object ReminderRepository {
         schedule(entry)
     }
 
+    /** Re-arms every saved reminder. Called after a reboot or app update, when the system has dropped our alarms. */
+    fun rescheduleAll() {
+        reminders.value.forEach { schedule(it) }
+    }
+
     private fun schedule(entry: ReminderEntry) {
         val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val triggerAt = nextTriggerMillis(entry.hour, entry.minute)
